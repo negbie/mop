@@ -160,16 +160,9 @@ func (profile *Profile) SendMail(data string) {
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", profile.Mail.Username)
 	msg.SetHeader("To", profile.Mail.To)
-	msg.SetHeader("Subject", "Market Data")
+	msg.SetHeader("Subject", "Stock Stats")
 	msg.SetBody("text/html", data)
 
-	//f, err := gomail.OpenFile("/home/Alex/lolcat.jpg")
-	//if err != nil {
-	//   panic(err)
-	//}
-	//msg.Attach(f)
-
-	// Send the email to Bob, Cora and Dan
 	mailer := gomail.NewDialer(profile.Mail.Host, profile.Mail.Port, profile.Mail.Username, profile.Mail.Password)
 	mailer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 

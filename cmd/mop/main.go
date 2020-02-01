@@ -47,6 +47,11 @@ func mainLoop(screen *mop.Screen, profile *mop.Profile) {
 	quotesQueue := time.NewTicker(5 * time.Second)
 	marketQueue := time.NewTicker(12 * time.Second)
 	emailQueue := time.NewTicker(10 * time.Second)
+
+	if profile.Mail.Host == "" {
+		emailQueue.Stop()
+	}
+
 	showingHelp := false
 	paused := false
 

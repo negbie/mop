@@ -32,7 +32,7 @@ type Layout struct {
 	regex          *regexp.Regexp     // Pointer to regular expression to align decimal points.
 	marketTemplate *template.Template // Pointer to template to format market data.
 	quotesTemplate *template.Template // Pointer to template to format the list of stock quotes.
-	emailTemplate  *template.Template // Pointer to template to format the list of stock quotes to send mail
+	emailTemplate  *template.Template // Pointer to template to format the list of stock quotes to send mail.
 }
 
 // NewLayout creates the layout and assigns the default values that stay unchanged.
