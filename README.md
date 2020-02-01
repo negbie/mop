@@ -4,14 +4,14 @@ Mop is a command-line utility that displays continuous up-to-date
 information about the U.S. markets and individual stocks. One
 screenshot is worth a thousand words:
 
-![Screenshot](https://raw.githubusercontent.com/mop-tracker/mop/master/doc/screenshot.png "Mop Screenshot")
+![Screenshot](https://raw.githubusercontent.com/negbie/mop/master/doc/screenshot.png "Mop Screenshot")
 
 ### Installing Mop ###
 Mop is implemented in Go and compiles down to a single executable file.
 
     # Make sure your $GOPATH is set.
-    $ go get github.com/mop-tracker/mop/cmd/mop
-    $ cd $GOPATH/src/github.com/mop-tracker/mop
+    $ go get github.com/negbie/mop/cmd/mop
+    $ cd $GOPATH/src/github.com/negbie/mop
     $ make            # <-- Compile and run mop.
     $ make build      # <-- Build mop in current directory.
     $ make install    # <-- Build mop and install it in $GOPATH/bin.

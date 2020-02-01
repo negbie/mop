@@ -5,10 +5,10 @@
 package mop
 
 import (
-	`regexp`
-	`strings`
+	"regexp"
+	"strings"
 
-	`github.com/nsf/termbox-go`
+	"github.com/nsf/termbox-go"
 )
 
 // LineEditor kicks in when user presses '+' or '-' to add or delete stock
@@ -25,7 +25,7 @@ type LineEditor struct {
 	regex   *regexp.Regexp // Regex to split comma-delimited input string.
 }
 
-// Returns new initialized LineEditor struct.
+// NewLineEditor returns new initialized LineEditor struct.
 func NewLineEditor(screen *Screen, quotes *Quotes) *LineEditor {
 	return &LineEditor{
 		screen: screen,

@@ -5,30 +5,41 @@
 package mop
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"sort"
 
 	"github.com/Knetic/govaluate"
+	"gopkg.in/gomail.v2"
 )
 
 // Profile manages Mop program settings as defined by user (ex. list of
 // stock tickers). The settings are serialized using JSON and saved in
 // the ~/.moprc file.
 type Profile struct {
-	Tickers          []string                       // List of stock tickers to display.
-	MarketRefresh    int                            // Time interval to refresh market data.
-	QuotesRefresh    int                            // Time interval to refresh stock quotes.
-	SortColumn       int                            // Column number by which we sort stock quotes.
-	Ascending        bool                           // True when sort order is ascending.
-	Grouped          bool                           // True when stocks are grouped by advancing/declining.
-	Filter           string                         // Filter in human form
+	Tickers          []string // List of stock tickers to display.
+	MarketRefresh    int      // Time interval to refresh market data.
+	QuotesRefresh    int      // Time interval to refresh stock quotes.
+	SortColumn       int      // Column number by which we sort stock quotes.
+	Ascending        bool     // True when sort order is ascending.
+	Grouped          bool     // True when stocks are grouped by advancing/declining.
+	Filter           string   // Filter in human form
+	Mail             Mail
 	filterExpression *govaluate.EvaluableExpression // The filter as a govaluate expression
 	selectedColumn   int                            // Stores selected column number when the column editor is active.
 	filename         string                         // Path to the file in which the configuration is stored
 }
 
-// Creates the profile and attempts to load the settings from ~/.moprc file.
+type Mail struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	To       string
+}
+
+// NewProfile creates the profile and attempts to load the settings from ~/.moprc file.
 // If the file is not there it gets created with default values.
 func NewProfile(filename string) *Profile {
 	profile := &Profile{filename: filename}
@@ -143,4 +154,26 @@ func (profile *Profile) SetFilter(filter string) {
 
 	profile.Filter = filter
 	profile.Save()
+}
+
+func (profile *Profile) SendMail(data string) {
+	msg := gomail.NewMessage()
+	msg.SetHeader("From", profile.Mail.Username)
+	msg.SetHeader("To", profile.Mail.To)
+	msg.SetHeader("Subject", "Market Data")
+	msg.SetBody("text/html", data)
+
+	//f, err := gomail.OpenFile("/home/Alex/lolcat.jpg")
+	//if err != nil {
+	//   panic(err)
+	//}
+	//msg.Attach(f)
+
+	// Send the email to Bob, Cora and Dan
+	mailer := gomail.NewDialer(profile.Mail.Host, profile.Mail.Port, profile.Mail.Username, profile.Mail.Password)
+	mailer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	if err := mailer.DialAndSend(msg); err != nil {
+		panic(err)
+	}
 }

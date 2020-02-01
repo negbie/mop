@@ -5,9 +5,9 @@
 package mop
 
 import (
-	`sort`
-	`strconv`
-	`strings`
+	"sort"
+	"strconv"
+	"strings"
 )
 
 // Sorter gets called to sort stock quotes by one of the columns. The
@@ -142,7 +142,7 @@ func (list byMarketCapDesc) Less(i, j int) bool {
 	return m(list.sortable[j].MarketCap) < m(list.sortable[i].MarketCap)
 }
 
-// Returns new Sorter struct.
+// NewSorter returns new Sorter struct.
 func NewSorter(profile *Profile) *Sorter {
 	return &Sorter{
 		profile: profile,

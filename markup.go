@@ -5,9 +5,10 @@
 package mop
 
 import (
-	`github.com/nsf/termbox-go`
-	`regexp`
-	`strings`
+	"regexp"
+	"strings"
+
+	"github.com/nsf/termbox-go"
 )
 
 // Markup implements some minimalistic text formatting conventions that
@@ -31,7 +32,7 @@ type Markup struct {
 	regex        *regexp.Regexp               // Regex to identify the supported tag names.
 }
 
-// Creates markup to define tag to Termbox translation rules and store default
+// NewMarkup creates markup to define tag to Termbox translation rules and store default
 // colors and column alignments.
 func NewMarkup() *Markup {
 	markup := &Markup{}

@@ -10,7 +10,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/mop-tracker/mop"
+	"github.com/negbie/mop"
 	"github.com/nsf/termbox-go"
 )
 
@@ -46,6 +46,7 @@ func mainLoop(screen *mop.Screen, profile *mop.Profile) {
 	timestampQueue := time.NewTicker(1 * time.Second)
 	quotesQueue := time.NewTicker(5 * time.Second)
 	marketQueue := time.NewTicker(12 * time.Second)
+	emailQueue := time.NewTicker(10 * time.Second)
 	showingHelp := false
 	paused := false
 
@@ -124,6 +125,9 @@ loop:
 			if !showingHelp && !paused {
 				screen.Draw(market)
 			}
+
+		case <-emailQueue.C:
+			profile.SendMail(screen.GetQuoteLayout(quotes))
 		}
 	}
 }

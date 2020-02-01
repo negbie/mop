@@ -13,7 +13,7 @@ type Filter struct {
 	profile *Profile // Pointer to where we store sort column and order.
 }
 
-// Returns new Filter struct.
+// NewFilter returns new Filter struct.
 func NewFilter(profile *Profile) *Filter {
 	return &Filter{
 		profile: profile,

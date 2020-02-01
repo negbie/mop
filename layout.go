@@ -5,22 +5,22 @@
 package mop
 
 import (
-	`bytes`
-	`fmt`
-	`reflect`
-	`regexp`
-	`strings`
-	`text/template`
-	`time`
+	"bytes"
+	"fmt"
+	"reflect"
+	"regexp"
+	"strings"
+	"text/template"
+	"time"
 )
 
 // Column describes formatting rules for individual column within the list
 // of stock quotes.
 type Column struct {
-	width     int                 // Column width.
-	name      string              // The name of the field in the Stock struct.
-	title     string              // Column title to display in the header.
-	formatter func(... string) string // Optional function to format the contents of the column.
+	width     int                    // Column width.
+	name      string                 // The name of the field in the Stock struct.
+	title     string                 // Column title to display in the header.
+	formatter func(...string) string // Optional function to format the contents of the column.
 }
 
 // Layout is used to format and display all the collected data, i.e. market
@@ -32,9 +32,10 @@ type Layout struct {
 	regex          *regexp.Regexp     // Pointer to regular expression to align decimal points.
 	marketTemplate *template.Template // Pointer to template to format market data.
 	quotesTemplate *template.Template // Pointer to template to format the list of stock quotes.
+	emailTemplate  *template.Template // Pointer to template to format the list of stock quotes to send mail
 }
 
-// Creates the layout and assigns the default values that stay unchanged.
+// NewLayout creates the layout and assigns the default values that stay unchanged.
 func NewLayout() *Layout {
 	layout := &Layout{}
 	layout.columns = []Column{
@@ -57,6 +58,7 @@ func NewLayout() *Layout {
 	layout.regex = regexp.MustCompile(`(\.\d+)[BMK]?$`)
 	layout.marketTemplate = buildMarketTemplate()
 	layout.quotesTemplate = buildQuotesTemplate()
+	layout.emailTemplate = buildEmailTemplate()
 
 	return layout
 }
@@ -98,6 +100,26 @@ func (layout *Layout) Quotes(quotes *Quotes) string {
 
 	buffer := new(bytes.Buffer)
 	layout.quotesTemplate.Execute(buffer, vars)
+
+	return buffer.String()
+}
+
+// EmailQuotes uses quotes template to send email to user
+func (layout *Layout) EmailQuotes(quotes *Quotes) string {
+	if ok, err := quotes.Ok(); !ok {
+		return err
+	}
+
+	vars := struct {
+		Header string
+		Stocks []Stock
+	}{
+		layout.Header(quotes.profile),
+		layout.prettify(quotes),
+	}
+
+	buffer := new(bytes.Buffer)
+	layout.emailTemplate.Execute(buffer, vars)
 
 	return buffer.String()
 }
@@ -215,6 +237,16 @@ func buildQuotesTemplate() *template.Template {
 }
 
 //-----------------------------------------------------------------------------
+func buildEmailTemplate() *template.Template {
+	markup := `
+{{.Header}}
+{{range.Stocks}}{{if .Advancing}}<green>{{end}}{{.Ticker}}{{.LastTrade}}{{.Change}}{{.ChangePct}}{{.Open}}{{.Low}}{{.High}}{{.Low52}}{{.High52}}{{.Volume}}{{.AvgVolume}}{{.PeRatio}}{{.Dividend}}{{.Yield}}{{.MarketCap}}</>
+{{end}}`
+
+	return template.Must(template.New(`quotes`).Parse(markup))
+}
+
+//-----------------------------------------------------------------------------
 func highlight(collections ...map[string]string) {
 	for _, collection := range collections {
 		if collection[`change`][0:1] != `-` {
@@ -256,7 +288,7 @@ func arrowFor(column int, profile *Profile) string {
 }
 
 //-----------------------------------------------------------------------------
-func blank(str... string) string {
+func blank(str ...string) string {
 	if len(str) < 1 {
 		return "ERR"
 	}
@@ -268,8 +300,8 @@ func blank(str... string) string {
 }
 
 //-----------------------------------------------------------------------------
-func zero(str... string) string {
-	if len(str) < 2{
+func zero(str ...string) string {
+	if len(str) < 2 {
 		return "ERR"
 	}
 	if str[0] == `0.00` {
@@ -280,7 +312,7 @@ func zero(str... string) string {
 }
 
 //-----------------------------------------------------------------------------
-func last(str... string) string {
+func last(str ...string) string {
 	if len(str) < 1 {
 		return "ERR"
 	}
@@ -292,13 +324,13 @@ func last(str... string) string {
 }
 
 //-----------------------------------------------------------------------------
-func currency(str... string) string {
+func currency(str ...string) string {
 	if len(str) < 2 {
 		return "ERR"
 	}
 	//default to $
 	symbol := "$"
-	switch (str[1]){
+	switch str[1] {
 	case "JPY":
 		symbol = "¥"
 		break
@@ -321,7 +353,7 @@ func currency(str... string) string {
 
 // Returns percent value truncated at 2 decimal points.
 //-----------------------------------------------------------------------------
-func percent(str... string) string {
+func percent(str ...string) string {
 	if len(str) < 1 {
 		return "ERR"
 	}

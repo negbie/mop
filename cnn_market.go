@@ -5,12 +5,12 @@
 package mop
 
 import (
-	`bytes`
-	`fmt`
-	`io/ioutil`
-	`net/http`
-	`regexp`
-	`strings`
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"regexp"
+	"strings"
 )
 
 const marketURL = `https://money.cnn.com/data/markets/`
@@ -35,7 +35,7 @@ type Market struct {
 	errors    string         // Error(s), if any.
 }
 
-// Returns new initialized Market struct.
+// NewMarket returns new initialized Market struct.
 func NewMarket() *Market {
 	market := &Market{}
 	market.IsClosed = false
@@ -147,7 +147,6 @@ func (market *Market) extract(snippet []byte) *Market {
 	market.Sp500[`change`] = matches[7]
 	market.Sp500[`latest`] = matches[8]
 	market.Sp500[`percent`] = matches[9]
-
 
 	market.Yield[`name`] = `10-year Yield`
 	market.Yield[`latest`] = matches[10]

@@ -4,7 +4,7 @@
 
 package mop
 
-import `github.com/nsf/termbox-go`
+import "github.com/nsf/termbox-go"
 
 // ColumnEditor handles column sort order. When activated it highlights
 // current column name in the header, then waits for arrow keys (choose
@@ -16,7 +16,7 @@ type ColumnEditor struct {
 	profile *Profile // Pointer to Profile where we save newly selected sort order.
 }
 
-// Returns new initialized ColumnEditor struct. As part of initialization it
+// NewColumnEditor returns new initialized ColumnEditor struct. As part of initialization it
 // highlights current column name (as stored in Profile).
 func NewColumnEditor(screen *Screen, quotes *Quotes) *ColumnEditor {
 	editor := &ColumnEditor{

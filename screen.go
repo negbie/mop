@@ -5,9 +5,10 @@
 package mop
 
 import (
-	`github.com/nsf/termbox-go`
-	`strings`
-	`time`
+	"strings"
+	"time"
+
+	"github.com/nsf/termbox-go"
 )
 
 // Screen is thin wrapper aroung Termbox library to provide basic display
@@ -21,7 +22,7 @@ type Screen struct {
 	pausedAt *time.Time // Timestamp of the pause request or nil if none.
 }
 
-// Initializes Termbox, creates screen along with layout and markup, and
+// NewScreen initializes Termbox, creates screen along with layout and markup, and
 // calculates current screen dimensions. Once initialized the screen is
 // ready for display.
 func NewScreen() *Screen {
@@ -88,7 +89,7 @@ func (screen *Screen) ClearLine(x int, y int) *Screen {
 func (screen *Screen) Draw(objects ...interface{}) *Screen {
 	zonename, _ := time.Now().In(time.Local).Zone()
 	if screen.pausedAt != nil {
-		defer screen.DrawLine(0, 0, `<right><r>`+screen.pausedAt.Format(`3:04:05pm ` + zonename)+`</r></right>`)
+		defer screen.DrawLine(0, 0, `<right><r>`+screen.pausedAt.Format(`3:04:05pm `+zonename)+`</r></right>`)
 	}
 	for _, ptr := range objects {
 		switch ptr.(type) {
@@ -143,4 +144,8 @@ func (screen *Screen) draw(str string) {
 	for row, line := range strings.Split(str, "\n") {
 		screen.DrawLine(0, row, line)
 	}
+}
+
+func (screen *Screen) GetQuoteLayout(quotes *Quotes) string {
+	return screen.layout.EmailQuotes(quotes)
 }
