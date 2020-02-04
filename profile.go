@@ -5,13 +5,12 @@
 package mop
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"sort"
 
 	"github.com/Knetic/govaluate"
-	"gopkg.in/gomail.v2"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Profile manages Mop program settings as defined by user (ex. list of
@@ -25,18 +24,18 @@ type Profile struct {
 	Ascending        bool     // True when sort order is ascending.
 	Grouped          bool     // True when stocks are grouped by advancing/declining.
 	Filter           string   // Filter in human form
-	Mail             Mail
+	DedupTime        int
+	ChangePct        float64
+	Discord          Discord
 	filterExpression *govaluate.EvaluableExpression // The filter as a govaluate expression
 	selectedColumn   int                            // Stores selected column number when the column editor is active.
 	filename         string                         // Path to the file in which the configuration is stored
 }
 
-type Mail struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
-	To       string
+type Discord struct {
+	Email     string
+	Password  string
+	ChannelID string
 }
 
 // NewProfile creates the profile and attempts to load the settings from ~/.moprc file.
@@ -157,16 +156,16 @@ func (profile *Profile) SetFilter(filter string) {
 }
 
 func (profile *Profile) SendMail(data string) {
-	msg := gomail.NewMessage()
-	msg.SetHeader("From", profile.Mail.Username)
-	msg.SetHeader("To", profile.Mail.To)
-	msg.SetHeader("Subject", "Stock Stats")
-	msg.SetBody("text/html", data)
+	if len(data) <= 16 {
+		return
+	}
+	dg, err := discordgo.New(profile.Discord.Email, profile.Discord.Password)
+	if err != nil {
+		panic(err)
+	}
 
-	mailer := gomail.NewDialer(profile.Mail.Host, profile.Mail.Port, profile.Mail.Username, profile.Mail.Password)
-	mailer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	if err := mailer.DialAndSend(msg); err != nil {
+	_, err = dg.ChannelMessageSend(profile.Discord.ChannelID, data)
+	if err != nil {
 		panic(err)
 	}
 }

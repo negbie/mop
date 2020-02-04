@@ -48,7 +48,7 @@ func mainLoop(screen *mop.Screen, profile *mop.Profile) {
 	marketQueue := time.NewTicker(12 * time.Second)
 	emailQueue := time.NewTicker(10 * time.Second)
 
-	if profile.Mail.Host == "" {
+	if profile.Discord.Email == "" {
 		emailQueue.Stop()
 	}
 

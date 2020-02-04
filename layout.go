@@ -9,9 +9,12 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/negbie/freecache"
 )
 
 // Column describes formatting rules for individual column within the list
@@ -104,20 +107,35 @@ func (layout *Layout) Quotes(quotes *Quotes) string {
 	return buffer.String()
 }
 
+var dupCache = freecache.NewCache(1024 * 1024)
+
 // EmailQuotes uses quotes template to send email to user
 func (layout *Layout) EmailQuotes(quotes *Quotes) string {
 	if ok, err := quotes.Ok(); !ok {
 		return err
 	}
 
-	vars := struct {
-		Header string
-		Stocks []Stock
-	}{
-		layout.Header(quotes.profile),
-		layout.prettify(quotes),
+	var s []Stock
+	for _, v := range quotes.stocks {
+		f, err := strconv.ParseFloat(v.ChangePct, 64)
+		if err == nil && f <= quotes.profile.ChangePct {
+			_, err := dupCache.Get([]byte(v.Ticker))
+			if err == nil {
+				return ""
+			}
+			dupCache.Set([]byte(v.Ticker), nil, (quotes.profile.DedupTime+1)*10)
+			s = append(s, v)
+		}
+	}
+	if len(s) < 1 {
+		return ""
 	}
 
+	vars := struct {
+		Stocks []Stock
+	}{
+		s,
+	}
 	buffer := new(bytes.Buffer)
 	layout.emailTemplate.Execute(buffer, vars)
 
@@ -239,8 +257,7 @@ func buildQuotesTemplate() *template.Template {
 //-----------------------------------------------------------------------------
 func buildEmailTemplate() *template.Template {
 	markup := `
-{{.Header}}
-{{range.Stocks}}{{if .Advancing}}<green>{{end}}{{.Ticker}}{{.LastTrade}}{{.Change}}{{.ChangePct}}{{.Open}}{{.Low}}{{.High}}{{.Low52}}{{.High52}}{{.Volume}}{{.AvgVolume}}{{.PeRatio}}{{.Dividend}}{{.Yield}}{{.MarketCap}}</>
+{{range.Stocks}}{{.Ticker}}  {{.LastTrade}} | {{.Change}} | {{.ChangePct}}%
 {{end}}`
 
 	return template.Must(template.New(`quotes`).Parse(markup))
